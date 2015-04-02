@@ -130,7 +130,13 @@ int main(int argc, char** argv) {
                 exit(1);    
             }
             if(myMuseum->personasAdentro == 0 ){
-                //TODO llamar destroyer
+                int childpid;
+                if( ( childpid = fork() ) < 0 ){
+                    Logger::loggError("Error al forkear");
+                    exit(1);   
+                }else if(childpid==0){
+                    execlp(PATH_DEST_EXEC,NAME_DEST_EXEC,(char*)NULL);
+                }
             }
             if(v(mutexPersonas)==-1){
                 Logger::loggError("Error al liberar el mutex sobre el contador");

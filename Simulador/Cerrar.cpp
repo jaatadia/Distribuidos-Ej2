@@ -30,6 +30,14 @@ int main(int argc, char** argv) {
         Logger::loggError("No se pudo encontrar el mutex");
         exit(1);
     };
+
+    Logger::logg("Obteniendo el mutex de lugares ocupados");
+    int mutexPer;
+    if ( (mutexPer = getsem(MUTEX_CONTADOR)) == -1){
+        Logger::loggError("No se pudo encontrar el mutex");
+        exit(1);
+    };
+
     
     Logger::logg("Obteniendo el museo");
     int shmid;
@@ -62,15 +70,30 @@ int main(int argc, char** argv) {
     myMuseum->estaAbierto=false;    
     Logger::logg("Liberando las puertas");
     
+    if(p(mutexPer)==-1){
+        Logger::loggError("Error al tomar el mutex del contador");
+        exit(1);   
+    }
+    
     if(myMuseum->personasAdentro!=0){
         Mensaje msg;
         for (int i=0;i<myMuseum->personasAdentro;i++){
             msgsnd(colaPer,&msg,sizeof(Mensaje)-sizeof(long),0);
         }
     }else{
-        //TODO->llamar destroyer
+        int childpid;
+        if( ( childpid = fork() ) < 0 ){
+            Logger::loggError("Error al forkear");
+            exit(1);   
+        }else if(childpid==0){
+            execlp(PATH_DEST_EXEC,NAME_DEST_EXEC,(char*)NULL);
+        }
     }
     
+    if(v(mutexPer)==-1){
+        Logger::loggError("Error al devolver el mutex del contador");
+        exit(1);   
+    }
     
     if(v(mutex)==-1){
         Logger::loggError("Error al liberar el mutex");

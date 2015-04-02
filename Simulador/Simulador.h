@@ -26,6 +26,8 @@
 #define PATH_WAKER_EXEC "./Waker"
 #define NAME_WAKER_EXEC "Waker"
 
+#define PATH_DEST_EXEC "./Destroyer"
+#define NAME_DEST_EXEC "Destroyer"
 
 #define PERMISOS 0660
 

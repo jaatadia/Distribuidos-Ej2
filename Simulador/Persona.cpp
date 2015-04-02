@@ -23,8 +23,10 @@ using namespace std;
  */
 #define PERSONA_ID "Persona"
 
+bool interrupted = false;
+
 void myHandler(int signal){
-    
+    interrupted = true;
 }
 
 //argv[1] que puerta debe usar para entrar,argv[2] tiempo a dormir, argv[3] puerta para slir
@@ -60,7 +62,8 @@ int main(int argc, char** argv) {
         exit(1);   
     }
     
-    
+    ss.str("");
+    ss<<salida;
     //busco las colas de salida
     Logger::logg("Buscando la cola de entrada nro "+ss.str());
     int colaSalida,colaSalidaRespuesta;
@@ -124,7 +127,7 @@ int main(int argc, char** argv) {
         exit(1);
     }
     
-    if(tiempo != 0){kill(childpid,SIGUSR1);}
+    if(!interrupted){kill(childpid,SIGUSR1);}
     
     Logger::logg("Sali del museo");
     
