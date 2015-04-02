@@ -13,15 +13,20 @@
 #define MUSEO_CANT_GENTE "MUSEO_CANT"
 #define MUSEO_PUERTAS "MUSEO_PUERTAS"
 #define MUSEO_MAX_PERSONAS "MUSEO_MAX_PERSONAS"
+#define CANT_PERSONAS "CANT_PERSONAS"
 
 #define DIRECTORIO_IPC "/home/knoppix/Atadia/Simulador"
 
 #define LOGGER_DEFAULT_PATH  "./log.txt"
+
 #define PATH_PUERTA_EXEC "./Puerta"
 #define NAME_PUERTA_EXEC "Puerta"
 
 #define PATH_PUERTA_SALIDA_EXEC "./PuertaSalida"
 #define NAME_PUERTA_SALIDA_EXEC "PuertaSalida"
+
+#define PATH_PERSONA_EXEC "./Persona"
+#define NAME_PERSONA_EXEC "Persona"
 
 #define PATH_WAKER_EXEC "./Waker"
 #define NAME_WAKER_EXEC "Waker"

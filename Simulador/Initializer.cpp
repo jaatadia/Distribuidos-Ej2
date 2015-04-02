@@ -207,13 +207,21 @@ void crearPuertas(){
 }
 
 void crearClientes(){
-    /*if((personas = Parser::getIntParam(PUERTAS_PERSONAS)) < 0 ){
-        Logger::loggError("Error al leer la configuracion de la cantidad personas por puerta");
+    int personas;
+    if((personas = Parser::getIntParam(CANT_PERSONAS)) < 0 ){
+        Logger::loggError("Error al leer la configuracion de la cantidad personas");
         exit(1);   
     }
-    std::stringstream per;
-    per << personas;*/
+    int puertas;
+    if((puertas = Parser::getIntParam(MUSEO_PUERTAS)) < 0 ){
+        Logger::loggError("Error al leer la configuracion de la cantidad de puertas puerta");
+        exit(1);   
+    }
     
+    std::stringstream per;
+    per << personas;
+    
+    Logger::logg("Creando "+per.str()+"personas");
     
     int cola;
     Logger::logg(string("Creando cola para terminacion de las personas"));
@@ -221,6 +229,34 @@ void crearClientes(){
         Logger::loggError("Error al crear la cola para terminacion de las puertas");
         exit(1);   
     }
+    
+    srand(time(NULL));
+    for (int i=0;i<100;i++){rand();};
+    
+    for (int i=0;i<personas;i++){
+        stringstream puertaEntrada;
+        stringstream espera;
+        stringstream puertaSalida;
+        
+        puertaEntrada<<rand()%puertas;
+        espera<<rand()%10000000;
+        puertaSalida<<rand()%puertas;
+        
+        Logger::logg("Creando una persona Entra: "+puertaEntrada.str()+" Duerme: "+espera.str()+" Sale:"+puertaSalida.str());
+        
+        int childpid;
+        if( ( childpid = fork() ) < 0 ){
+            Logger::loggError("Error al forkearse");
+            exit(1);   
+        }else if(childpid==0){
+            execlp(PATH_PERSONA_EXEC,NAME_PERSONA_EXEC,puertaEntrada.str().c_str(),espera.str().c_str(),puertaSalida.str().c_str(),(char*)NULL);
+            Logger::loggError("Error al generar la persona");
+            exit(1);
+        }
+        
+        usleep(rand()%100000);
+    }
+    
 }
 
 

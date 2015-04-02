@@ -90,6 +90,11 @@ int main(int argc, char** argv) {
             exit(1);   
         }
         
+        if(p(mutexEstado)){
+            Logger::loggError("Error al pedir el mutex de estado");
+            exit(1);
+        }
+        
         Logger::logg("Esperando exclusion mutua sobre el contador");
         if(p(mutexPersonas)==-1){
             Logger::loggError("Error al obtener el mutex de cantidad de personas");
@@ -106,11 +111,6 @@ int main(int argc, char** argv) {
                 exit(1);   
             }
         }
-        Logger::logg("Devolviendo el mutex");
-        if(v(mutexPersonas)==-1){
-            Logger::loggError("Error al devolver el mutex de cantidad de cantidad de personas");
-            exit(1);   
-        }
         
         msg.destinatario  = msg.mensaje;
         msg.mensaje = MENSAJE_PASAR;
@@ -119,16 +119,9 @@ int main(int argc, char** argv) {
             exit(1);   
         }
         
+        //esto puede generar un deadlock 
         //verifico si cerro el museo y salio la gente
-        if(p(mutexEstado)){
-            Logger::loggError("Error al pedir el mutex de estado");
-            exit(1);
-        }
         if(!myMuseum->estaAbierto){
-            if(p(mutexPersonas)==-1){
-                Logger::loggError("Error al pedir el mutex sobre el contador");
-                exit(1);    
-            }
             if(myMuseum->personasAdentro == 0 ){
                 int childpid;
                 if( ( childpid = fork() ) < 0 ){
@@ -138,9 +131,10 @@ int main(int argc, char** argv) {
                     execlp(PATH_DEST_EXEC,NAME_DEST_EXEC,(char*)NULL);
                 }
             }
-            if(v(mutexPersonas)==-1){
-                Logger::loggError("Error al liberar el mutex sobre el contador");
-            }
+        }
+
+        if(v(mutexPersonas)==-1){
+            Logger::loggError("Error al liberar el mutex sobre el contador");
         }
         
         if(v(mutexEstado)==-1){

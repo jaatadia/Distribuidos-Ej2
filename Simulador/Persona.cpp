@@ -81,10 +81,12 @@ int main(int argc, char** argv) {
     int childpid;
     std::stringstream pid; pid<<":"<<getpid();
     if( ( childpid = fork() ) < 0 ){
-        Logger::loggError("Error al atachearse a la memoria compartida");
+        Logger::loggError("Error al forkearse");
         exit(1);   
     }else if(childpid==0){
         execlp(PATH_WAKER_EXEC,NAME_WAKER_EXEC,(PERSONA_ID+pid.str()).c_str(),COLA_MATAR_PERSONAS_STR,(char*)NULL);
+        Logger::loggError("Error al generar el waker");
+        exit(1);
     }
     
     
@@ -104,13 +106,14 @@ int main(int argc, char** argv) {
     
     if(msg.mensaje==MENSAJE_NO_PASAR){
         Logger::logg("El museo esta cerrado me voy");
+        if(!interrupted){kill(childpid,SIGUSR1);}
         return 0;
     }
     
     
     Logger::logg("Entre al museo");
     int tiempo;
-    if( (tiempo = sleep(dormir))!=0){
+    if( (tiempo = usleep(dormir))!=0){
         Logger::logg("Me avisaron que salga");
     }
     
