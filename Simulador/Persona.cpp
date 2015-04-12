@@ -23,11 +23,29 @@ using namespace std;
  */
 #define PERSONA_ID "Persona"
 
-bool interrupted = false;
+int  colaSalida;
+int  colaSalidaRespuesta;
 
 void myHandler(int signal){
-    interrupted = true;
+    Logger::logg("Me avisaron que salga");
+    Mensaje msg;
+    msg.mensaje=getpid();
+    Logger::logg("Enviando mensaje para salir");
+    if(msgsnd(colaSalida,&msg,sizeof(Mensaje)-sizeof(long),0)==-1){
+        Logger::loggError("Error al escribir el mensaje ");
+        exit(1);
+    }
+    
+    Logger::logg("Esperando respuesta");
+    if(msgrcv(colaSalidaRespuesta,&msg,sizeof(Mensaje)-sizeof(long),getpid(),0)==-1){
+        Logger::loggError("Error al leer el mensaje ");
+        exit(1);
+    }
+    
+    Logger::logg("Sali del museo");
 }
+
+
 
 //argv[1] que puerta debe usar para entrar,argv[2] tiempo a dormir, argv[3] puerta para slir
 int main(int argc, char** argv) {
@@ -66,7 +84,6 @@ int main(int argc, char** argv) {
     ss<<salida;
     //busco las colas de salida
     Logger::logg("Buscando la cola de entrada nro "+ss.str());
-    int colaSalida,colaSalidaRespuesta;
     if( (colaSalida = msgget(ftok(DIRECTORIO_IPC,PUERTA_SALIDA_FILA + DESP * salida),PERMISOS)) == -1){
         Logger::loggError("Error al encontrar la cola de entrada nro " +ss.str());
         exit(1);   
@@ -77,18 +94,6 @@ int main(int argc, char** argv) {
         Logger::loggError("Error al encontrar la cola de respuesta nro "+ss.str());
         exit(1);   
     }
-    
-    int childpid;
-    std::stringstream pid; pid<<":"<<getpid();
-    if( ( childpid = fork() ) < 0 ){
-        Logger::loggError("Error al forkearse");
-        exit(1);   
-    }else if(childpid==0){
-        execlp(PATH_WAKER_EXEC,NAME_WAKER_EXEC,(PERSONA_ID+pid.str()).c_str(),COLA_MATAR_PERSONAS_STR,(char*)NULL);
-        Logger::loggError("Error al generar el waker");
-        exit(1);
-    }
-    
     
     Mensaje msg;
     msg.mensaje=getpid();
@@ -106,16 +111,27 @@ int main(int argc, char** argv) {
     
     if(msg.mensaje==MENSAJE_NO_PASAR){
         Logger::logg("El museo esta cerrado me voy");
-        if(!interrupted){kill(childpid,SIGUSR1);}
         return 0;
     }
     
     
-    Logger::logg("Entre al museo");
-    int tiempo;
-    if( (tiempo = usleep(dormir))!=0){
-        Logger::logg("Me avisaron que salga");
+    int childpid;
+    std::stringstream pid; pid<<":"<<getpid();
+    if( ( childpid = fork() ) < 0 ){
+        Logger::loggError("Error al forkearse");
+        exit(1);   
+    }else if(childpid==0){
+        execlp(PATH_WAKER_EXEC,NAME_WAKER_EXEC,(PERSONA_ID+pid.str()).c_str(),COLA_MATAR_PERSONAS_STR,(char*)NULL);
+        Logger::loggError("Error al generar el waker");
+        exit(1);
     }
+    
+
+
+    
+    Logger::logg("Entre al museo");
+    usleep(dormir);
+    kill(childpid,SIGUSR1);
     
     msg.mensaje=getpid();
     Logger::logg("Enviando mensaje para salir");
@@ -129,8 +145,6 @@ int main(int argc, char** argv) {
         Logger::loggError("Error al leer el mensaje ");
         exit(1);
     }
-    
-    if(!interrupted){kill(childpid,SIGUSR1);}
     
     Logger::logg("Sali del museo");
     
