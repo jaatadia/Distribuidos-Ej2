@@ -14,7 +14,7 @@
 #include <signal.h>
 #include "Logger.h"
 #include "Simulador.h"
-
+#include <sys/wait.h>
 
 using namespace std;
 
@@ -43,14 +43,30 @@ void myHandler(int signal){
     }
     
     Logger::logg("Sali del museo");
+    exit(1);
 }
 
 
 
 //argv[1] que puerta debe usar para entrar,argv[2] tiempo a dormir, argv[3] puerta para slir
 int main(int argc, char** argv) {
-    signal(SIGUSR1,myHandler);
     Logger::startLog(LOGGER_DEFAULT_PATH,PERSONA_ID);
+    
+    struct sigaction oldHandler;
+    struct sigaction newHandler;
+    newHandler.sa_handler=myHandler;
+    newHandler.sa_flags=0;
+    sigfillset(&(newHandler.sa_mask));
+    
+    if(sigaction(SIGUSR1,&newHandler,&oldHandler) == -1){
+        Logger::loggError("Error al encontrar asignar el signal handler a la persona");
+        exit(1);   
+    }
+    
+    
+    
+    
+    
     
     if (argc != 4 ){
         Logger::loggError("No se pasaron los parametros correctos 1: numero de puerta, 2: tiempo a dormri, 3: puerta para salir");
@@ -131,7 +147,10 @@ int main(int argc, char** argv) {
     
     Logger::logg("Entre al museo");
     usleep(dormir);
+    
     kill(childpid,SIGUSR1);
+    int exitStatus;
+    wait(&exitStatus);
     
     msg.mensaje=getpid();
     Logger::logg("Enviando mensaje para salir");
