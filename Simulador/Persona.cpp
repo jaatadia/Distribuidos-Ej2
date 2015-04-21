@@ -29,6 +29,7 @@ int  colaSalidaRespuesta;
 void myHandler(int signal){
     Logger::logg("Me avisaron que salga");
     Mensaje msg;
+    msg.destinatario=1;
     msg.mensaje=getpid();
     Logger::logg("Enviando mensaje para salir");
     if(msgsnd(colaSalida,&msg,sizeof(Mensaje)-sizeof(long),0)==-1){
@@ -112,6 +113,7 @@ int main(int argc, char** argv) {
     }
     
     Mensaje msg;
+    msg.destinatario=1;
     msg.mensaje=getpid();
     Logger::logg("Enviando mensaje");
     if(msgsnd(colaEntrada,&msg,sizeof(Mensaje)-sizeof(long),0)==-1){
