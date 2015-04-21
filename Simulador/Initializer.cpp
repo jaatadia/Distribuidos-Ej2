@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sstream>
+#include <sys/wait.h>
 
 #include "Simulador.h"
 #include "Logger.h"
@@ -254,6 +255,7 @@ void crearClientes(){
             exit(1);
         }
         
+        while(waitpid(-1,NULL,WNOHANG)!=0);
         usleep(rand()%100000);
     }
     
